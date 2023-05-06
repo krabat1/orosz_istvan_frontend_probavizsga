@@ -1,10 +1,11 @@
 *{
     margin:0;
     padding:0;
+    
 }
+
 app-home{
     min-height: 100vh;
-    min-width: 100vw;
     justify-content: center;
     align-items: center;
     flex-wrap:wrap;
@@ -19,9 +20,22 @@ app-home{
     cursor: pointer;
 }
 
-@media (min-width: 576px){
-    .d-sm-flex {
-        display: flex!important;
+#today span:nth-child(even),
+#tomorrow span:nth-child(even){
+    background-color: whitesmoke;
+}
+
+.material-symbols-outlined{
+    cursor: pointer;
+}
+
+.close{
+    float:right;
+}
+
+@media (min-width: 1200px) {
+    .container{
+        max-width: 970px;
     }
 }
 

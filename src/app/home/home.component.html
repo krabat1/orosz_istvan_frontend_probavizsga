@@ -1,61 +1,73 @@
-<div class="container">
+<div class="container py-3">
     <div class="head px-3 py-2 rounded-top">:: Add new task</div>
     <div class="add">
         <div class="px-3 pt-2 border-left border border-top-0 border-bottom-0">
-            <input class="col-12" type="text">
+            <input 
+            placeholder="Write here your task, select the day and press [Enter] or click to save." 
+            class="col-12 px-2 py-1" 
+            type = "text" 
+            [value] = "this.actualTask.description" 
+            (keyup.enter)="this.save()"
+            [(ngModel)] = "this.actualTask.description" 
+            (ngModelChange)="this.onKey($event)" #myInput>{{ myInput.focus() }}
         </div>
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-body">
+                    {{this.modalText}}
+                    <span class="close material-symbols-outlined" (click)="this.closeModal()">close</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+
+
         <div class="px-3 pt-2 border-left border border-top-0 border-bottom-0 text-center">
-            <label class="pe-1" for="today">Today</label>
-            <input type="radio" id="today" name="when" value="today" checked>&nbsp;or&nbsp;
-            <input type="radio" id="tomorrow" name="when" value="tomorrow">
-            <label class="ps-1" for="tomorrow">Tomorrow?</label>
+            <label class="pe-1" for="r_today">Today</label>
+            <input type="radio" 
+                id="r_today"
+                name="when" 
+                [(ngModel)] = "this.actualTask.tomorrow"
+                (ngModelChange)="this.checkDiag()" 
+                [value]="false">&nbsp;or&nbsp;
+            <input type="radio" 
+                id="r_tomorrow"
+                name="when" 
+                [(ngModel)] = "this.actualTask.tomorrow" 
+                (ngModelChange)="this.checkDiag()" 
+                [value]="true">
+            <label class="ps-1" for="r_tomorrow">Tomorrow?</label>
         </div>
         <div class="d-flex justify-content-center px-3 py-2 mb-3 rounded-bottom border border-top-0">
-            <button class="px-3">save</button>
+            <button type="button" class="btn btn-light px-3 border" (click)="this.save()">save</button>
         </div>
     </div>
 
     <div class="d-flex align-items-top flex-column flex-sm-row">
         <div class="col-12 col-sm-5">
-            <div class="head px-3 py-2 rounded-top">:: Today</div>
-            <div class="px-3 py-2 border-left border border-top-0 rounded-bottom">
-                <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
-                <label class="ps-1" for="vehicle1" contenteditable="true"> I have a bike</label><br>
-                <input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
-                <label class="ps-1" for="vehicle2" contenteditable="true"> I have a car</label><br>
-                <input type="checkbox" id="vehicle3" name="vehicle3" value="Boat">
-                <label class="ps-1" for="vehicle3" contenteditable="true"> I have a boat</label><br>
-
-                <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
-                <label class="ps-1" for="vehicle1" contenteditable="true"> I have a bike</label><br>
-                <input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
-                <label class="ps-1" for="vehicle2" contenteditable="true"> I have a car</label><br>
-                <input type="checkbox" id="vehicle3" name="vehicle3" value="Boat">
-                <label class="ps-1" for="vehicle3" contenteditable="true"> I have a boat</label><br>
-
+            <div class="head px-3 py-2 rounded-top">:: Today <span class="d-inline-block">{{this.today}}</span></div>
+            <div id="today" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
             </div>
         </div>
         <div class="d-none d-sm-flex col-12 col-sm-2 align-content-around text-center flex-wrap px-3">
-            <span class="col-12 material-symbols-outlined">
-                keyboard_double_arrow_left
-                </span>
-            <span class="col-12 material-symbols-outlined">keyboard_double_arrow_right</span>
-            <span class="col-12 material-symbols-outlined">delete</span>
+            <span class="col-12 material-symbols-outlined" (click)="this.switchDay('tomorrow')">keyboard_double_arrow_left</span>
+            <span class="col-12 material-symbols-outlined" (click)="this.switchDay('today')">keyboard_double_arrow_right</span>
+            <span class="col-12 material-symbols-outlined" (click)="this.delete()">delete</span>
         </div>
-        <div class="d-sm-none d-flex col-12 col-sm-2 justify-content-around py-3 ">
-            <span class="material-symbols-outlined">keyboard_double_arrow_up</span>
-            <span class="material-symbols-outlined">keyboard_double_arrow_down</span>
-            <span class="material-symbols-outlined">delete</span>
+        <div class="d-sm-none d-flex col-12 col-sm-2 justify-content-around py-3 "> 
+            <span class="material-symbols-outlined" (click)="this.switchDay('tomorrow')">keyboard_double_arrow_up</span>
+            <span class="material-symbols-outlined" (click)="this.switchDay('today')">keyboard_double_arrow_down</span>
+            <span class="material-symbols-outlined" (click)="this.delete()">delete</span>
         </div>            
         <div class="col-12 col-sm-5">
-            <div class="head px-3 py-2 rounded-top">:: Tomorrow</div>
-            <div class="px-3 py-2 border-left border border-top-0 rounded-bottom">
-                <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
-                <label class="ps-1" for="vehicle1"> I have a bike</label><br>
-                <input type="checkbox" id="vehicle2" name="vehicle2" value="Car">
-                <label class="ps-1" for="vehicle2"> I have a car</label><br>
-                <input type="checkbox" id="vehicle3" name="vehicle3" value="Boat">
-                <label class="ps-1" for="vehicle3"> I have a boat</label><br>
+            <div class="head px-3 py-2 rounded-top">:: Tomorrow <span class="d-inline-block">{{this.tomorrow}}</span> </div>
+            <div id="tomorrow" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
             </div>
         </div>
     </div>
