@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Task } from '../task';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class HomeComponent implements OnInit {
@@ -14,11 +15,14 @@ export class HomeComponent implements OnInit {
   today: string = '';
   tomorrow: string = '';
   modalText: string = '';
+  tasksForToday: Array<Task> = new Array<Task>();
+  tasksForTomorrow: Array<Task> = new Array<Task>();
+  checked: { [key: string]: boolean; } = {};
+  originalTask: string = '';
 
-  constructor() { }
+  constructor(private cdr: ChangeDetectorRef) { } 
 
   ngOnInit(): void {
-
     let today = new Date();
     let timestamp = today.getTime()
     let tomorrow = new Date( timestamp + (1000*60*60*24) );
@@ -29,9 +33,15 @@ export class HomeComponent implements OnInit {
     this.tomorrow = tomorrow.toLocaleDateString(undefined, options);
     // ha van már feladat elmetve a mentés localStorage-ban, töltsük be
     this.import();
+    this.cdr.markForCheck();
   }
 
-  // ha változik a kiválasztás vagy a szöveg,
+  clearConsole(){
+    console.clear();
+    this.cdr.detectChanges(); // *trigger change here*
+  }
+
+  // ha változik a nap-kiválasztás vagy a szöveg,
   //írjuk ki konzolra az actualTaskot ellenőrzésképpen
   onKey(e: Event){
     //this.checkDiag();
@@ -45,6 +55,7 @@ export class HomeComponent implements OnInit {
     if(this.actualTask.description != ''){
       let copy: Task = this.actualTask.getCopy();
       console.log('Ezt az objektet pusholjuk a feladatok tömbjébe:');
+      copy.description = this.sanitize(copy.description)
       console.log(copy);
       this.tasks.push(copy);
       this.actualTask = new Task();
@@ -67,54 +78,89 @@ export class HomeComponent implements OnInit {
     modal.classList.remove("show")
   }
 
-
-
   // mentés localStorage-ba
   export(){
-    console.log('A feladatok tömbjét eltárojuk a localStorage-ba.')
+    console.log('A feladatok tömbjét eltároljuk a localStorage-ba.')
     localStorage.setItem('tasks', JSON.stringify(this.tasks));
     this.import();
   }
 
   // betöltés localStorage-ból
   import(){
-    //minden kiírt adatot törlünk
-    let today = document.querySelector('div#today') as HTMLElement
-    let tomorrow = document.querySelector('div#tomorrow') as HTMLElement
-    today.innerHTML = "";
-    tomorrow.innerHTML = "";
+    console.log('import')
     // betöltjük az adatokat a localStorage-ból
     this.tasks = JSON.parse(localStorage.getItem('tasks') as string);
-    //console.log(this.tasks);
     if( this.tasks != null && this.tasks.length > 0 ){
-      let tasksForToday = this.tasks.filter(val => val.tomorrow == false);
-      let tasksForTomorrow = this.tasks.filter(val => val.tomorrow == true);
+      this.tasksForToday = this.tasks.filter(val => val.tomorrow == false);
+      this.tasksForTomorrow = this.tasks.filter(val => val.tomorrow == true);
       console.log('Betöltjük a mentett adatokat és szétválogatjuk a mai és holnapi teendőket:')
-      console.log(tasksForToday)
-      console.log(tasksForTomorrow)
-      if( tasksForToday.length != 0 ){
-        tasksForToday.forEach(element => {
-          today.innerHTML += '<span class="d-inline-flex w-100 px-2 rounded"><input type="checkbox" id="'+element.id+'" name="'+element.id+'"><label class="ps-1" for="'+element.id+'" contenteditable="true">'+element.description+'</label></span>'
+      console.log(this.tasksForToday)
+      console.log(this.tasksForTomorrow)
+      //https://stackoverflow.com/a/43064411/4279940
+
+      if( this.tasksForToday.length != 0 ){
+        this.tasksForToday.forEach(element => {
+          this.checked[element.id] = false;
         });
-      }else{
-        today.innerHTML = "<div class=\"text-center \">| <strong>no task</strong> |</div>";
       }
-      if( tasksForTomorrow.length != 0 ){
-        tasksForTomorrow.forEach(element => {
-          tomorrow.innerHTML += '<span class="d-inline-flex w-100 px-2 rounded"><input type="checkbox" id="'+element.id+'" name="'+element.id+'"><label class="ps-1" for="'+element.id+'" contenteditable="true">'+element.description+'</label></span>'
+      if( this.tasksForTomorrow.length != 0 ){
+        this.tasksForTomorrow.forEach(element => {
+          this.checked[element.id] = false;
         });
-      }else{
-        tomorrow.innerHTML = "<div class=\"text-center \">| <strong>no task</strong> |</div>";
       }
-      //console.log(this.tasks);
+      this.cdr.detectChanges(); // *trigger change here* https://stackoverflow.com/a/56311756/4279940
     }
     // ha nincs mit betölteni
     if( this.tasks == null || this.tasks.length == 0 ){
       console.log('Nincs betöltendő feladat.')
-      this.tasks = new Array<Task>();
-      today.innerHTML = "<div class=\"text-center \">| <strong>no task</strong> |</div>";
-      tomorrow.innerHTML = "<div class=\"text-center \">| <strong>no task</strong> |</div>";
     }
+  }
+
+  // szerkesztésre kattintás
+  prevFocus(e: Event, id: string){ 
+    console.log('Szerkeszthetővé tesszük a '+id+' id-jű feladatot')
+    let label = document.querySelector('label[for="'+id+'"]') as HTMLElement
+    let checkbox = document.querySelector('input[id="'+id+'"]') as HTMLElement
+    this.checked[id]=false;
+    label.setAttribute('contenteditable','true')
+    label.focus() 
+    this.originalTask = label.innerText;
+  }
+  // szerkesztés vége
+  onFocusOutEvent(e: Event, id: string){
+    //console.log(id)
+    let label = e.target as HTMLElement
+    let modifiedTask = label.innerText;
+    //console.log(modifiedTask)
+    label.removeAttribute('contenteditable')
+    const lettersRegexp = /^[A-Za-z0-9öüóőúéáűíÖÜÓŐÚÉÁŰÍ]+$/;
+    if( this.originalTask == modifiedTask ) {
+      //do nothing
+      console.log('A szöveg nem változott')
+    }else if( lettersRegexp.test(modifiedTask) === false ){
+      console.log('A kapott szöveg nem tartalmaz betűket')
+      this.openModal('If you don\'t write anything, nothing will change.')
+      this.updateTask(id,this.originalTask)
+    }else{
+      this.updateTask(id,modifiedTask) 
+    }
+  }
+
+  sanitize(str:string){
+    str = str.replace(/(?:\r\n|\r|\n)/g, ' ');
+    return str.trim()
+  }
+
+  //update
+  updateTask(id: string, text: string){
+    console.log('Update-eljük a feladatot a feladatok tömbjében')
+    this.tasks.forEach(element => {
+      if(element.id == id){
+        element.description = this.sanitize(text);
+        console.log(element) 
+        this.export()  
+      }
+    });
   }
 
 
@@ -135,13 +181,11 @@ export class HomeComponent implements OnInit {
       this.tasks.forEach((elem, index) => {
         if(elem.id == element){
           this.tasks[index].tomorrow = !this.tasks[index].tomorrow
+          this.checked[elem.id]=false;
         }
       });
     });
     this.export();
-    //mint a deleténél, 
-    //de itt csak a tomorrow-t választjuk ki és megfordítjuk a booleant
-    //aztán export
   }
 
   //feladatok törlése
@@ -157,10 +201,22 @@ export class HomeComponent implements OnInit {
     deleteIds.forEach(element => {
       this.tasks.forEach((elem, index) => {
         if(elem.id == element){
+          delete this.checked[elem.id]
           this.tasks.splice(index, 1);
-          //console.log(index)
         }
       });
+      //console.log(this.checked)
+      //console.log(this.tasks)
+      // lehetséges hiba: ha az alábbi feltétel nincs, az utolsó feladat törlését nem rendereli újra valamiért 
+      if(this.tasks.length == 0){
+        //minden kiírt adatot törlünk
+        let today = document.querySelector('div#today') as HTMLElement
+        let tomorrow = document.querySelector('div#tomorrow') as HTMLElement
+        today.innerHTML = "";
+        today.innerHTML = "";
+        today.innerHTML = "<div class=\"text-center \">| <strong>no task</strong> |</div>";
+        tomorrow.innerHTML = "<div class=\"text-center \">| <strong>no task</strong> |</div>";
+      }
     });
     this.export();
   }

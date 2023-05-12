@@ -13,16 +13,28 @@ app-home{
     flex-direction: column;
 }
 .head{
-    background-color: #efefef;
+    background-color: whitesmoke;
 }
 
 .add label{
     cursor: pointer;
 }
 
-#today span:nth-child(even),
-#tomorrow span:nth-child(even){
+#today > div:nth-child(even),
+#tomorrow > div:nth-child(even){
     background-color: whitesmoke;
+}
+
+#today .material-symbols-outlined,
+#tomorrow .material-symbols-outlined{
+    float:right;
+    cursor: pointer;
+    color: lightgrey;
+}
+
+#today .material-symbols-outlined:hover,
+#tomorrow .material-symbols-outlined:hover{
+    color: initial;
 }
 
 .material-symbols-outlined{
@@ -31,6 +43,11 @@ app-home{
 
 .close{
     float:right;
+}
+
+.consoleclear{
+    cursor:pointer;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 @media (min-width: 1200px) {
