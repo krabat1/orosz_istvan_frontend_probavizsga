@@ -1,16 +1,15 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Task } from '../task';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
+}) 
 
 export class HomeComponent implements OnInit {
 
-  tasks: Array<Task> = new Array<Task>();
+  tasks: Array<Task> = new Array<Task>();             
   actualTask: Task = new Task();
   today: string = '';
   tomorrow: string = '';
@@ -20,7 +19,7 @@ export class HomeComponent implements OnInit {
   checked: { [key: string]: boolean; } = {};
   originalTask: string = '';
 
-  constructor(private cdr: ChangeDetectorRef) { } 
+  constructor() { } 
 
   ngOnInit(): void {
     let today = new Date();
@@ -33,12 +32,13 @@ export class HomeComponent implements OnInit {
     this.tomorrow = tomorrow.toLocaleDateString(undefined, options);
     // ha van már feladat elmetve a mentés localStorage-ban, töltsük be
     this.import();
-    this.cdr.markForCheck();
+  }
+  trackByIndex(index: number, obj: any): any {
+    return index;
   }
 
   clearConsole(){
     console.clear();
-    this.cdr.detectChanges(); // *trigger change here*
   }
 
   // ha változik a nap-kiválasztás vagy a szöveg,
@@ -85,12 +85,17 @@ export class HomeComponent implements OnInit {
     this.import();
   }
 
-  // betöltés localStorage-ból
+  // betöltés localStorage-ból,
+  // szétválogatás napok szerint
   import(){
-    console.log('import')
-    // betöltjük az adatokat a localStorage-ból
     this.tasks = JSON.parse(localStorage.getItem('tasks') as string);
-    if( this.tasks != null && this.tasks.length > 0 ){
+    if( this.tasks == null || this.tasks.length == 0 ){
+      console.log('Nincs betöltendő feladat.')
+      //A banális hiba!
+      this.tasksForToday = [];
+      this.tasksForTomorrow = [];
+
+    }else if( this.tasks != null && this.tasks.length > 0 ){
       this.tasksForToday = this.tasks.filter(val => val.tomorrow == false);
       this.tasksForTomorrow = this.tasks.filter(val => val.tomorrow == true);
       console.log('Betöltjük a mentett adatokat és szétválogatjuk a mai és holnapi teendőket:')
@@ -108,17 +113,12 @@ export class HomeComponent implements OnInit {
           this.checked[element.id] = false;
         });
       }
-      this.cdr.detectChanges(); // *trigger change here* https://stackoverflow.com/a/56311756/4279940
-    }
-    // ha nincs mit betölteni
-    if( this.tasks == null || this.tasks.length == 0 ){
-      console.log('Nincs betöltendő feladat.')
     }
   }
 
   // szerkesztésre kattintás
   prevFocus(e: Event, id: string){ 
-    console.log('Szerkeszthetővé tesszük a '+id+' id-jű feladatot')
+    console.log('Szerkeszthetővé tesszük a '+id+' id-jű feladatot.')
     let label = document.querySelector('label[for="'+id+'"]') as HTMLElement
     let checkbox = document.querySelector('input[id="'+id+'"]') as HTMLElement
     this.checked[id]=false;
@@ -126,19 +126,18 @@ export class HomeComponent implements OnInit {
     label.focus() 
     this.originalTask = label.innerText;
   }
+
   // szerkesztés vége
   onFocusOutEvent(e: Event, id: string){
-    //console.log(id)
     let label = e.target as HTMLElement
     let modifiedTask = label.innerText;
-    //console.log(modifiedTask)
     label.removeAttribute('contenteditable')
     const lettersRegexp = /^[A-Za-z0-9öüóőúéáűíÖÜÓŐÚÉÁŰÍ]+$/;
     if( this.originalTask == modifiedTask ) {
       //do nothing
-      console.log('A szöveg nem változott')
+      console.log('A szöveg nem változott.')
     }else if( lettersRegexp.test(modifiedTask) === false ){
-      console.log('A kapott szöveg nem tartalmaz betűket')
+      console.log('A kapott szöveg nem tartalmaz betűket.')
       this.openModal('If you don\'t write anything, nothing will change.')
       this.updateTask(id,this.originalTask)
     }else{
@@ -153,11 +152,10 @@ export class HomeComponent implements OnInit {
 
   //update
   updateTask(id: string, text: string){
-    console.log('Update-eljük a feladatot a feladatok tömbjében')
+    console.log('Update-eljük a '+id+' id-jű feladatot a feladatok tömbjében erről: "'+this.originalTask+'" erre: "'+this.sanitize(text)+'".')
     this.tasks.forEach(element => {
       if(element.id == id){
         element.description = this.sanitize(text);
-        console.log(element) 
         this.export()  
       }
     });
@@ -171,21 +169,23 @@ export class HomeComponent implements OnInit {
       switchIds[i]= switchTasks.item(i).id
     }
     if( switchIds.length > 0 ){
-      console.log('A következő id-jű feladatoknál állítjuk át a napot:')
-      console.log(switchIds)
-    }else{
-      this.openModal('You have not selected any tasks for the given day: "'+when+'".')
-      console.log('A felhasználó rossz gombot nyomott meg az áthelyezéshez')
-    }
-    switchIds.forEach(element => {
-      this.tasks.forEach((elem, index) => {
-        if(elem.id == element){
-          this.tasks[index].tomorrow = !this.tasks[index].tomorrow
-          this.checked[elem.id]=false;
-        }
+      switchIds.forEach(element => {
+        this.tasks.forEach((elem, index) => {
+          if(elem.id == element){
+            this.tasks[index].tomorrow = !this.tasks[index].tomorrow
+            this.checked[elem.id]=false;
+          }
+        });
       });
-    });
-    this.export();
+      console.log('A következő id-jű feladatoknál állítjuk át a napot: '+switchIds.toString())
+      this.export();
+    }else{
+      if(this.tasksForToday.length == 0 && this.tasksForTomorrow.length == 0){
+        this.openModal('You have no tasks.')
+      }else{
+        this.openModal('You have not selected any tasks for the given day: "'+when+'".')
+      }
+    }
   }
 
   //feladatok törlése
@@ -196,29 +196,23 @@ export class HomeComponent implements OnInit {
     for(let i=0; i < deleTasks.length; i++){
       deleteIds[i]= deleTasks.item(i).id
     }
-    console.log('A következő id-jű feladatokat töröltük a feladatok tömbjéből:')
-    console.log(deleteIds)
-    deleteIds.forEach(element => {
-      this.tasks.forEach((elem, index) => {
-        if(elem.id == element){
-          delete this.checked[elem.id]
-          this.tasks.splice(index, 1);
-        }
-      });
-      //console.log(this.checked)
-      //console.log(this.tasks)
-      // lehetséges hiba: ha az alábbi feltétel nincs, az utolsó feladat törlését nem rendereli újra valamiért 
-      if(this.tasks.length == 0){
-        //minden kiírt adatot törlünk
-        let today = document.querySelector('div#today') as HTMLElement
-        let tomorrow = document.querySelector('div#tomorrow') as HTMLElement
-        today.innerHTML = "";
-        today.innerHTML = "";
-        today.innerHTML = "<div class=\"text-center \">| <strong>no task</strong> |</div>";
-        tomorrow.innerHTML = "<div class=\"text-center \">| <strong>no task</strong> |</div>";
+    if( deleteIds.length == 0 ){
+      if(this.tasksForToday.length == 0 && this.tasksForTomorrow.length == 0){
+        this.openModal('You have no tasks.')
+      }else{
+        this.openModal('You have no selected tasks.')
       }
-    });
-    this.export();
+    }else{
+      deleteIds.forEach(element => {
+        this.tasks.forEach((elem, index) => {
+          if(elem.id == element){
+            delete this.checked[elem.id]
+            this.tasks.splice(index, 1);
+          }
+        });
+      });
+      console.log('A következő id-jű feladatokat töröltük a feladatok tömbjéből: '+deleteIds.toString())
+      this.export();      
+    }
   }
-
 }

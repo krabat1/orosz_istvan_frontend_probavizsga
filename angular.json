@@ -98,6 +98,16 @@
             ],
             "scripts": []
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {
+            "prerender": false,
+            "ssr": false,
+            "browserTarget": "probaVizsga:build:production",
+            "firebaseProject": "webler-probavizsga",
+            "firebaseHostingSite": "webler-probavizsga"
+          }
         }
       }
     }

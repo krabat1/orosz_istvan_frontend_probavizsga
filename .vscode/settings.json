@@ -1,3 +1,4 @@
 {
-    "workbench.settings.openDefaultSettings": true
+    "workbench.settings.openDefaultSettings": true,
+    "json.schemaDownload.enable": true
 }

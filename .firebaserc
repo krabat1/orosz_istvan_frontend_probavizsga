@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "webler-probavizsga": {
+      "hosting": {
+        "probaVizsga": [
+          "webler-probavizsga"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "webler-probavizsga"
+  }
+}

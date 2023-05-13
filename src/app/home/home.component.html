@@ -10,7 +10,7 @@
             (keyup.enter)="this.save()" 
             [(ngModel)] = "this.actualTask.description" 
             (ngModelChange)="this.onKey($event)" 
-            autofocus >
+            autofocus>
         </div>
 
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -45,24 +45,26 @@
         </div>
     </div>
 
+    <!--today-->
     <div class="d-flex align-items-top flex-column flex-sm-row">
         <div class="col-12 col-sm-5">
-            <div class="head px-3 py-2 rounded-top border">:: Today <span class="d-inline-block">{{this.today}}</span></div>
-            <ng-container *ngIf="this.tasksForToday.length > 0;">
+            <div class="head px-3 py-2 rounded-top border">:: Today [{{this.tasksForToday.length}}] <span class="d-inline-block">{{this.today}}</span></div>
+            <div *ngIf="this.tasksForToday.length > 0;else no_tasks_today">
                 <div id="today" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
-                    <div class="d-block px-2 py-1 rounded" *ngFor="let element of tasksForToday">
-                        <input type="checkbox" id="{{element.id}}" name="{{element.id}}" [checked]="this.checked[element.id]" [(ngModel)]="this.checked[element.id]">
-                        <label class="px-1" for="{{element.id}}" (focusout)="onFocusOutEvent($event, element.id)">{{element.description}}</label>
+                    <div class="d-block px-2 py-1 rounded" *ngFor="let element of tasksForToday;let index = index;trackBy:trackByIndex;">
+                        <input [(ngModel)]="this.checked[element.id]" type="checkbox" id="{{element.id}}" name="{{element.id}}" [checked]="this.checked[element.id]">
+                        <label name="{{element.id}}" ngDefaultControl 
+                        [(ngModel)]="this.tasksForToday[index].description" 
+                        class="px-1" for="{{element.id}}" (focusout)="onFocusOutEvent($event, element.id)">{{element.description}}</label>
                         <span class="material-symbols-outlined" (click)="prevFocus($event, element.id)">edit</span>
                     </div>
                 </div>
-            </ng-container>
-            <ng-container *ngIf="this.tasksForToday.length == 0;">
+            </div>
+            <ng-template #no_tasks_today>
                 <div id="today" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
                     <div class="text-center ">| <strong>no task</strong> |</div>
                 </div>
-            </ng-container>
-
+            </ng-template>
         </div>
         <div class="d-none d-sm-flex col-12 col-sm-2 align-content-around text-center flex-wrap px-3">
             <span class="col-12 material-symbols-outlined" (click)="this.switchDay('tomorrow')">keyboard_double_arrow_left</span>
@@ -75,24 +77,28 @@
             <span class="material-symbols-outlined" (click)="this.delete()">delete</span>
         </div>            
         <div class="col-12 col-sm-5">
-            <div class="head px-3 py-2 border rounded-top">:: Tomorrow <span class="d-inline-block">{{this.tomorrow}}</span></div>
-            <ng-container *ngIf="this.tasksForTomorrow.length > 0;">
+            <div class="head px-3 py-2 rounded-top border">:: Tomorrow [{{this.tasksForTomorrow.length}}] <span class="d-inline-block">{{this.today}}</span></div>
+            <div *ngIf="this.tasksForTomorrow.length > 0;else no_tasks_tomorrow">
                 <div id="tomorrow" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
-                    <div class="px-2 py-1 rounded" *ngFor="let element of tasksForTomorrow">
-                        <input type="checkbox" id="{{element.id}}" name="{{element.id}}" [checked]="this.checked[element.id]" [(ngModel)]="this.checked[element.id]">
-                        <label class="px-1" for="{{element.id}}" (focusout)="onFocusOutEvent($event, element.id)">{{element.description}}</label>
-                        <span class="material-symbols-outlined" (click)="prevFocus($event,element.id)">edit</span>
+                    <div class="d-block px-2 py-1 rounded" *ngFor="let element of tasksForTomorrow;let index = index;trackBy:trackByIndex;">
+                        <input [(ngModel)]="this.checked[element.id]" type="checkbox" id="{{element.id}}" name="{{element.id}}" [checked]="this.checked[element.id]">
+                        <label name="{{element.id}}" ngDefaultControl 
+                        [(ngModel)]="this.tasksForTomorrow[index].description" 
+                        class="px-1" for="{{element.id}}" (focusout)="onFocusOutEvent($event, element.id)">{{element.description}}</label>
+                        <span class="material-symbols-outlined" (click)="prevFocus($event, element.id)">edit</span>
                     </div>
                 </div>
-            </ng-container>
-            <ng-container *ngIf="this.tasksForTomorrow.length == 0;">
+            </div>
+            <ng-template #no_tasks_tomorrow>
                 <div id="tomorrow" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
                     <div class="text-center ">| <strong>no task</strong> |</div>
                 </div>
-            </ng-container>
+            </ng-template> 
             </div>
     </div>
-    <div class="text-end"><span class="consoleclear" (click)="this.clearConsole()"><br>> console.clear();</span></div>
+    <div class="text-end">
+        <span class="consoleclear" (click)="this.clearConsole()"><br>> console.clear()<span class="blink_me">_</span></span>
+    </div>
 </div>
 
 
