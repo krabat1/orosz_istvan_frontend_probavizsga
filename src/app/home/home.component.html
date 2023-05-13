@@ -53,10 +53,10 @@
                 <div id="today" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
                     <div class="d-block px-2 py-1 rounded" *ngFor="let element of tasksForToday;let index = index;trackBy:trackByIndex;">
                         <input [(ngModel)]="this.checked[element.id]" type="checkbox" id="{{element.id}}" name="{{element.id}}" [checked]="this.checked[element.id]">
+                        <span class="material-symbols-outlined" (click)="prevFocus($event, element.id)">edit</span>
                         <label name="{{element.id}}" ngDefaultControl 
                         [(ngModel)]="this.tasksForToday[index].description" 
-                        class="px-1" for="{{element.id}}" (focusout)="onFocusOutEvent($event, element.id)">{{element.description}}</label>
-                        <span class="material-symbols-outlined" (click)="prevFocus($event, element.id)">edit</span>
+                        class="px-1 d-inline" for="{{element.id}}" (focusout)="onFocusOutEvent($event, element.id)" (keydown.enter)="onFocusOutEvent($event, element.id)">{{element.description}}</label>
                     </div>
                 </div>
             </div>
@@ -82,10 +82,10 @@
                 <div id="tomorrow" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
                     <div class="d-block px-2 py-1 rounded" *ngFor="let element of tasksForTomorrow;let index = index;trackBy:trackByIndex;">
                         <input [(ngModel)]="this.checked[element.id]" type="checkbox" id="{{element.id}}" name="{{element.id}}" [checked]="this.checked[element.id]">
+                        <span class="material-symbols-outlined" (click)="prevFocus($event, element.id)">edit</span>
                         <label name="{{element.id}}" ngDefaultControl 
                         [(ngModel)]="this.tasksForTomorrow[index].description" 
-                        class="px-1" for="{{element.id}}" (focusout)="onFocusOutEvent($event, element.id)">{{element.description}}</label>
-                        <span class="material-symbols-outlined" (click)="prevFocus($event, element.id)">edit</span>
+                        class="px-1 d-inline" for="{{element.id}}" (focusout)="onFocusOutEvent($event, element.id)" (keydown.enter)="onFocusOutEvent($event, element.id)">{{element.description}}</label>
                     </div>
                 </div>
             </div>

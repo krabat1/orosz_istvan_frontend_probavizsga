@@ -132,7 +132,9 @@ export class HomeComponent implements OnInit {
     let label = e.target as HTMLElement
     let modifiedTask = label.innerText;
     label.removeAttribute('contenteditable')
-    const lettersRegexp = /^[A-Za-z0-9öüóőúéáűíÖÜÓŐÚÉÁŰÍ]+$/;
+    const lettersRegexp = /^[A-Za-z0-9öüóőúéáűíÖÜÓŐÚÉÁŰÍ \s\{\}\[\]\?\|\$\€!\.,:;-_/\+\*'"%=\(\)\\]+$/;
+    // A-Za-z0-9öüóőúéáűíÖÜÓŐÚÉÁŰÍ {}[]?|$€!.,:;-_/+*'"%=()\
+    
     if( this.originalTask == modifiedTask ) {
       //do nothing
       console.log('A szöveg nem változott.')
