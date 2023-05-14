@@ -77,7 +77,7 @@
             <span class="material-symbols-outlined" (click)="this.delete()">delete</span>
         </div>            
         <div class="col-12 col-sm-5">
-            <div class="head px-3 py-2 rounded-top border">:: Tomorrow [{{this.tasksForTomorrow.length}}] <span class="d-inline-block">{{this.today}}</span></div>
+            <div class="head px-3 py-2 rounded-top border">:: Tomorrow [{{this.tasksForTomorrow.length}}] <span class="d-inline-block">{{this.tomorrow}}</span></div>
             <div *ngIf="this.tasksForTomorrow.length > 0;else no_tasks_tomorrow">
                 <div id="tomorrow" class="px-1 py-2 border-left border border-top-0 rounded-bottom">
                     <div class="d-block px-2 py-1 rounded" *ngFor="let element of tasksForTomorrow;let index = index;trackBy:trackByIndex;">

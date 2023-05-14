@@ -25,7 +25,14 @@ export class HomeComponent implements OnInit {
     let today = new Date();
     let timestamp = today.getTime()
     let tomorrow = new Date( timestamp + (1000*60*60*24) );
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+    const options: Intl.DateTimeFormatOptions = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'/*, 
+      hour: "numeric",
+      minute: "numeric",
+    second: "numeric"*/ }
     console.log('Dátumok beállítása')
     console.log('Input focus, hogy ne kelljen kattintgatni.')
     this.today = today.toLocaleDateString(undefined, options);
