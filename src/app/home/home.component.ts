@@ -59,10 +59,15 @@ export class HomeComponent implements OnInit {
 
   // feladat hozzáadása
   save(){
+    //console.log(this.tasks);
     if(this.actualTask.description != ''){
       let copy: Task = this.actualTask.getCopy();
       console.log('Ezt az objektet pusholjuk a feladatok tömbjébe:');
-      copy.description = this.sanitize(copy.description)
+      copy.description = this.sanitize(copy.description);
+      if(this.tasks == null){
+        //console.log('tasks nincs is');
+        this.tasks = [];
+      }
       console.log(copy);
       this.tasks.push(copy);
       this.actualTask = new Task();
@@ -95,13 +100,13 @@ export class HomeComponent implements OnInit {
   // betöltés localStorage-ból,
   // szétválogatás napok szerint
   import(){
+    //console.log(this.tasks);
     this.tasks = JSON.parse(localStorage.getItem('tasks') as string);
     if( this.tasks == null || this.tasks.length == 0 ){
       console.log('Nincs betöltendő feladat.')
       //A banális hiba!
       this.tasksForToday = [];
       this.tasksForTomorrow = [];
-
     }else if( this.tasks != null && this.tasks.length > 0 ){
       this.tasksForToday = this.tasks.filter(val => val.tomorrow == false);
       this.tasksForTomorrow = this.tasks.filter(val => val.tomorrow == true);
